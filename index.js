@@ -2,9 +2,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const Image = require('./models/Image');
 
 const app = express();
+
+const imageSchema = new mongoose.Schema({
+    filename: String,
+    url: String,
+});
+
+const Image = mongoose.model('Image', imageSchema);
 
 // Connect to MongoDB
 mongoose.connect('mongodb://0.0.0.0/image-test', { useNewUrlParser: true, useUnifiedTopology: true });
