@@ -16,7 +16,7 @@ app.get('/download', (req, res) => {
   const filePath = path.join(__dirname, '../movie.mp4');
   console.log(filePath)
 
-  const child = fork('./file-streamer.js');
+  const child = fork('./file-fork.js');
 
   res.writeHead(200, {
     'Content-Type': 'application/octet-stream',
@@ -35,6 +35,30 @@ app.get('/download', (req, res) => {
 
   child.send(filePath); // Send the file path to the child process
 });
+
+app.get('/download-db', (req, res) => {
+  const child = spawn('node', [path.join(__dirname, 'db-download-spawn.js')]);
+
+  res.writeHead(200, {
+    'Content-Type': 'text/csv',
+    'Content-Disposition': 'attachment; filename="users.csv"'
+  });
+
+  child.stdout.pipe(res); // Pipe the child process's stdout to the response
+
+  child.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+  });
+
+  child.on('close', (code) => {
+    if (code !== 0) {
+      res.status(500).send(`Child process exited with code ${code}`);
+    } else {
+      res.end();
+    }
+  });
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
