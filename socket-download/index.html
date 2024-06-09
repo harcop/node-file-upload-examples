@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.io File Download</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Socket.io File Download</h1>
+    <button id="downloadBtn">Download File</button>
+    <script>
+        const socket = io('http://localhost:4450');
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            socket.emit('requestFile', 'socket.txt');
+        });
+
+        let fileData = [];
+
+        socket.on('fileData', (chunk) => {
+            fileData.push(chunk);
+        });
+
+        socket.on('fileEnd', () => {
+            const blob = new Blob(fileData);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'downloaded_example.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+
+        socket.on('fileError', (errorMessage) => {
+            console.error('Error downloading file:', errorMessage);
+        });
+    </script>
+</body>
+</html>
